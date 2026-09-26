@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Artifact World</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- PLAY ekrani har qanday holatda ishlaydi (script.js ishlamasa ham) -->
+    <script>
+        function startGameScreen() {
+            const start = document.getElementById("startScreen");
+            const hud = document.getElementById("hud");
+
+            if (start && !start.classList.contains("hidden")) {
+                start.classList.add("hidden");
+            }
+
+            if (hud && hud.classList.contains("hidden")) {
+                hud.classList.remove("hidden");
+            }
+
+            if (typeof showMessage === "function") {
+                try {
+                    showMessage("🎮 Welcome!");
+                } catch (e) {
+                    console.error(e);
+                }
+            }
+        }
+    </script>
+</head>
+
+<body>
+
+<div id="game"></div>
+
+<!-- PRESTIGE screen flash overlay -->
+<div id="prestigeFlash"></div>
+
+<!-- ================= FATAL ERROR OVERLAY ================= -->
+<div id="fatalError" class="hidden" role="alert">
+    <div class="fatalBox">
+        <div class="fatalTitle">
+            ⚠️ O‘yinni yuklab bo‘lmadi
+        </div>
+        <p id="fatalMessage">
+            Noma’lum xatolik yuz berdi.
+        </p>
+        <button id="fatalReloadBtn" type="button">
+            🔄 Qayta yuklash
+        </button>
+    </div>
+</div>
+
+<!-- ================= START SCREEN ================= -->
+<div id="startScreen">
+    <div class="startBox">
+        <div class="logo">
+            ⚡ ARTIFACT WORLD
+        </div>
+        <div class="subtitle">
+            STARTER VILLAGE
+        </div>
+
+        <h3>Choose Skin</h3>
+
+        <div class="skins">
+            <button class="skinChoice active" data-skin="blue">
+                🔵 Blue Hero
+            </button>
+            <button class="skinChoice" data-skin="red">
+                🔴 Red Warrior
+            </button>
+            <button class="skinChoice" data-skin="purple">
+                🟣 Purple Ninja
+            </button>
+        </div>
+
+        <button id="playBtn" class="playBtn" type="button" onclick="startGameScreen()">
+            ▶ PLAY
+        </button>
+    </div>
+</div>
+
+<!-- ================= HUD ================= -->
+<div id="hud" class="hidden">
+
+    <div class="stats">
+        <div class="hpRow">
+            ❤️ HP: <b id="hpText">10M / 10M</b>
+            <div class="hpBarOuter">
+                <div id="hpBarFill" class="hpBarFill"></div>
+            </div>
+        </div>
+        <div>🏆 Level: <b id="level">1</b></div>
+        <div>💪 Strength: <b id="strength">0</b></div>
+        <div>🪙 Coins: <b id="coins">500</b></div>
+        <div>⚡ Power: <b id="power">1</b></div>
+        <div>🎒 Bag: <b id="capacity">100</b></div>
+        <div>⚔️ Swords: <b id="swordsCount">0/2</b></div>
+        <div>💥 Total Power: <b id="totalPower">1.00x</b></div>
+        <div class="rebirthStat">🔄 Rebirth: <b id="rebirths">0/10</b></div>
+        <div class="rebirthStat">⚡ Rebirth Mult: <b id="rebirthMultiplier">x1</b></div>
+        <div class="rebirthStat">💰 Money Mult: <b id="moneyMultiplier">x1</b></div>
+        <div class="rebirthStat">🎯 Kerakli Strength: <b id="rebirthReqLabel">1.000.000</b></div>
+        <div class="rebirthStat">💪 Hozirgi Strength: <b id="rebirthCurLabel">0</b></div>
+        <div id="prestigeBadge" class="prestigeBadge" style="display:none"></div>
+    </div>
+
+    <div class="buttons">
+        <button id="inventoryBtn" type="button">🎒 Inventory</button>
+        <button id="shopBtn" type="button">💎 Shop</button>
+        <button id="skinBtn" type="button">🎨 Skins</button>
+        <button id="rebirthBtn" type="button">🔄 Rebirth</button>
+    </div>
+
+    <!-- ARTIFACTS -->
+    <div class="artifactInfo">
+        <h3>💎 Artifacts</h3>
+        <div id="activeArtifacts">None</div>
+        <div>Bonus: <b id="artifactBonus">+0%</b></div>
+        <div class="limit">Maximum: 2 active</div>
+    </div>
+
+    <!-- SWORDS -->
+    <div class="swordInfo">
+        <h3>⚔️ Swords</h3>
+        <div id="equippedSwords">None</div>
+        <div class="limit">Maximum: 2 active</div>
+    </div>
+
+    <!-- PETS -->
+    <div class="petInfo">
+        <h3>🐾 Pets</h3>
+        <div class="activePetsCount">ACTIVE PETS: <b id="petActiveCount">0/5</b></div>
+        <div id="petsList">No active pets</div>
+        <div>Multiplier: <b id="petMultiplier">x1</b></div>
+    </div>
+
+    <!-- UPGRADES -->
+    <div class="upgrades">
+        <button id="powerBtn" type="button">⚡ Power +50%</button>
+        <button id="bagBtn" type="button">🎒 Bag +50%</button>
+    </div>
+
+    <!-- EGG -->
+    <button id="eggBtn" class="eggBtn" type="button">🥚 Egg — 100 🪙</button>
+
+    <!-- ATTACK -->
+    <button id="attackBtn" class="attackBtn" type="button">⚔️ ATTACK</button>
+
+    <!-- TRAIN -->
+    <button id="trainBtn" class="trainBtn" type="button">💪 TRAIN</button>
+
+    <div id="message"></div>
+
+    <div class="controls">
+        <b>W A S D</b> — Move
+        <br>
+        <b>Shift</b> — Sprint
+        <br>
+        <b>E</b> — Talk to Merchant
+        <br>
+        <b>⚔️ ATTACK</b> yoki NPC'ga bosing — Jang qilish
+    </div>
+</div>
+
+<!-- ================= INVENTORY ================= -->
+<div id="inventoryModal" class="modal hidden">
+    <div class="modalBox">
+        <button class="closeBtn" data-close="inventoryModal" type="button">✕</button>
+        <h2>🎒 Inventory</h2>
+        <h3>🐾 Pets</h3>
+        <div id="inventoryPets"></div>
+        <h3>💎 Artifacts</h3>
+        <div id="inventoryArtifacts"></div>
+        <h3>⚔️ Swords</h3>
+        <div id="inventorySwords"></div>
+    </div>
+</div>
+
+<!-- ================= SHOP ================= -->
+<div id="shopModal" class="modal hidden">
+    <div class="modalBox shopBox">
+        <button class="closeBtn" data-close="shopModal" type="button">✕</button>
+        <h2>💎 Artifact Merchant</h2>
+        <p class="shopText">Buy powerful artifacts from the merchant.</p>
+        <div id="artifactShop"></div>
+    </div>
+</div>
+
+<!-- ================= SKINS ================= -->
+<div id="skinModal" class="modal hidden">
+    <div class="modalBox">
+        <button class="closeBtn" data-close="skinModal" type="button">✕</button>
+        <h2>🎨 Skins</h2>
+        <div class="skinCards">
+            <button class="skinCard" data-skin="blue" type="button">🔵<br>Blue Hero</button>
+            <button class="skinCard" data-skin="red" type="button">🔴<br>Red Warrior</button>
+            <button class="skinCard" data-skin="purple" type="button">🟣<br>Purple Ninja</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= REBIRTH CONFIRM ================= -->
+<div id="rebirthModal" class="modal hidden">
+    <div class="modalBox rebirthBox">
+        <button class="closeBtn" data-close="rebirthModal" type="button">✕</button>
+        <h2>🔄 CONFIRM REBIRTH?</h2>
+
+        <div class="rebirthReqRow">
+            <div>Required:<br><b id="rebirthReqStrength">1,000,000</b> Strength</div>
+            <div>Current:<br><b id="rebirthCurStrength">0</b> Strength</div>
+        </div>
+
+        <p id="rebirthWarn" class="rebirthWarn"></p>
+
+        <div class="rebirthCols">
+            <div class="rebirthLose">
+                <h3>You will LOSE</h3>
+                <ul>
+                    <li>Strength</li>
+                    <li>Coins</li>
+                    <li>Level</li>
+                    <li>Power upgrades</li>
+                    <li>Bag upgrades</li>
+                </ul>
+            </div>
+            <div class="rebirthKeep">
+                <h3>You will KEEP</h3>
+                <ul>
+                    <li>🐾 Pets</li>
+                    <li>💎 Artifacts</li>
+                    <li>⚔️ Swords</li>
+                    <li>🔄 Rebirths</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="rebirthGain">
+            <h3>You will GAIN</h3>
+            <p>⚡ <span id="rebirthGainPower">+500% Power multiplier</span></p>
+            <p>💰 <span id="rebirthGainMoney">2x Money multiplier</span></p>
+        </div>
+
+        <div class="rebirthActions">
+            <button id="rebirthCancelBtn" class="rebirthCancel" type="button">Cancel</button>
+            <button id="rebirthConfirmBtn" class="rebirthConfirm" type="button">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<!-- ================= THREE.JS ================= -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<!-- ================= GAME ================= -->
+<script src="script.js"></script>
+
+<!-- FATAL ERROR TEKSHIRUVI (script.js dan mustaqil, har doim ishlaydi) -->
+<script>
+    (function () {
+        function showFatalErrorFallback(message) {
+            const overlay = document.getElementById("fatalError");
+            const msgEl = document.getElementById("fatalMessage");
+            if (msgEl) { msgEl.textContent = message; }
+            if (overlay) { overlay.classList.remove("hidden"); }
+        }
+
+        window.showFatalError = showFatalErrorFallback;
+
+        window.addEventListener("load", function () {
+            if (typeof THREE === "undefined") {
+                showFatalErrorFallback(
+                    "❌ Three.js yuklanmadi. Internet aloqangizni tekshirib, sahifani qayta yuklang (F5)."
+                );
+                console.error("Three.js yuklanmadi!");
+            } else {
+                console.log("✅ Three.js ishlayapti:", THREE.REVISION);
+            }
+        });
+
+        const reloadBtn = document.getElementById("fatalReloadBtn");
+        if (reloadBtn) {
+            reloadBtn.addEventListener("click", function () {
+                location.reload();
+            });
+        }
+    })();
+</script>
+
+</body>
+</html>
