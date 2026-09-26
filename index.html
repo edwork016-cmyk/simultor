@@ -2,7 +2,7 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 
     <title>Artifact World</title>
 
@@ -157,6 +157,54 @@
 
     <div id="message"></div>
 
+    <!-- ============ MOBILE-ONLY UI (faqat telefon/kichik ekranlar) ============ -->
+
+    <!-- Ixcham yuqori HUD -->
+    <div id="mobileHud" class="mobileOnly">
+        <span class="mHudItem">❤️ <b id="mHp">10M</b></span>
+        <span class="mHudItem">💪 <b id="mStrength">0</b></span>
+        <span class="mHudItem">🪙 <b id="mCoins">500</b></span>
+        <span class="mHudItem">⚡ <b id="mPower">1.00x</b></span>
+        <span class="mHudItem">🔄 <b id="mRebirth">0/10</b></span>
+    </div>
+
+    <!-- Menu paneli -->
+    <div id="mobileMenu" class="mobileOnly hidden">
+        <div class="mobileMenuHeader">
+            <span>☰ MENU</span>
+            <button id="mobileMenuClose" type="button">✕</button>
+        </div>
+        <div class="mobileMenuGrid">
+            <button data-menu="inventory" type="button">🎒 Inventory</button>
+            <button data-menu="pets" type="button">🐾 Pets</button>
+            <button data-menu="swords" type="button">⚔️ Swords</button>
+            <button data-menu="artifacts" type="button">💎 Artifacts</button>
+            <button data-menu="shop" type="button">🛒 Shop</button>
+            <button data-menu="upgrades" type="button">⚡ Upgrades</button>
+            <button data-menu="rebirth" type="button">🔄 Rebirth</button>
+            <button data-menu="skins" type="button">🎨 Skins</button>
+            <button data-menu="controls" type="button">❓ Controls</button>
+        </div>
+    </div>
+
+    <!-- Virtual joystick (pastki chap) -->
+    <div id="joystick" class="mobileOnly">
+        <div id="joyKnob"></div>
+    </div>
+
+    <!-- Mobile action buttons (o'ng) -->
+    <button id="mAttackBtn" class="mobileOnly mActionBtn mAttack" type="button">⚔️<span>ATTACK</span></button>
+    <button id="mTrainBtn" class="mobileOnly mActionBtn mTrain" type="button">🏋️<span>TRAIN</span></button>
+
+    <!-- Pastki navigation bar -->
+    <div id="mobileNav" class="mobileOnly">
+        <button data-menu="inventory" type="button"><span>🎒</span>Bag</button>
+        <button data-menu="pets" type="button"><span>🐾</span>Pets</button>
+        <button data-menu="shop" type="button"><span>🛒</span>Shop</button>
+        <button id="mobileNavMenu" type="button"><span>☰</span>Menu</button>
+    </div>
+
+
     <div class="controls">
         <b>W A S D</b> — Move
         <br>
@@ -250,6 +298,33 @@
             <button id="rebirthCancelBtn" class="rebirthCancel" type="button">Cancel</button>
             <button id="rebirthConfirmBtn" class="rebirthConfirm" type="button">Confirm</button>
         </div>
+    </div>
+</div>
+
+<!-- ================= UPGRADES (mobile) ================= -->
+<div id="upgradesModal" class="modal hidden">
+    <div class="modalBox">
+        <button class="closeBtn" data-close="upgradesModal" type="button">✕</button>
+        <h2>⚡ Upgrades</h2>
+        <button id="mPowerBtn" class="wideModalBtn" type="button">⚡ Power +50%</button>
+        <button id="mBagBtn" class="wideModalBtn" type="button">🎒 Bag +50%</button>
+        <button id="mEggBtn" class="wideModalBtn" type="button">🥚 Egg — 100 🪙</button>
+    </div>
+</div>
+
+<!-- ================= CONTROLS (mobile) ================= -->
+<div id="controlsModal" class="modal hidden">
+    <div class="modalBox">
+        <button class="closeBtn" data-close="controlsModal" type="button">✕</button>
+        <h2>❓ Controls</h2>
+        <ul class="controlsList">
+            <li>🕹️ <b>Joystick</b> (pastki chap) — harakatlanish</li>
+            <li>👆 Ekranni <b>suring</b> — kamerani aylantirish</li>
+            <li>⚔️ <b>ATTACK</b> — NPC bilan jang qilish</li>
+            <li>🏋️ <b>TRAIN</b> — kuch orttirish</li>
+            <li>🛒 <b>Shop / Menu</b> — do‘kon va boshqa panellar</li>
+        </ul>
+        <p class="shopText">Desktop: <b>W A S D</b> — harakat, <b>Shift</b> — sprint, <b>E</b> — savdogar bilan gaplashish.</p>
     </div>
 </div>
 

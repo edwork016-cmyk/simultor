@@ -89,6 +89,16 @@ const PICKUP_RANGE = 2.2;
 
 const keys = {};
 
+// MOBILE INPUT holati
+const joyVec = { x: 0, z: 0 };   // virtual joystick harakat vektori (-1..1)
+let joyActive = false;
+let joyTouchId = null;
+let camYaw = 0;                  // kamera gorizontal burilishi (touch swipe)
+let camPitch = 0;                // kamera balandlik offseti (touch swipe)
+let camTouchId = null;
+let camLastX = 0;
+let camLastY = 0;
+
 // ========================================
 // SKINS
 // ========================================
@@ -252,6 +262,7 @@ function startGame() {
         loadGame();
         updateUI();
         setupButtons();
+        setupMobileControls();
         animate();
     } catch (error) {
         reportFatalError("❌ O‘yinni ishga tushirishda xatolik yuz berdi.", error);
@@ -770,10 +781,17 @@ function movePlayer(delta) {
     if (keys["a"]) x -= 1;
     if (keys["d"]) x += 1;
 
+    // Virtual joystick (mobile) — WASD bilan bir xil harakat
+    x += joyVec.x;
+    z += joyVec.z;
+
     if (x !== 0 || z !== 0) {
         const length = Math.sqrt(x * x + z * z);
-        x /= length;
-        z /= length;
+        // length > 1 bo'lsa normalizatsiya (diagonal), joystick uchun analog magnitude saqlanadi
+        if (length > 1) {
+            x /= length;
+            z /= length;
+        }
 
         // Sprint: Shift bosilganda tezroq
         const speed = keys["shift"] ? SPRINT_SPEED : NORMAL_SPEED;
@@ -796,10 +814,17 @@ function movePlayer(delta) {
     if (player.position.z < -60) player.position.z = -60;
     else if (player.position.z > 60) player.position.z = 60;
 
-    // Camera (frame-rate independent smoothing)
+    // Camera (frame-rate independent smoothing) + touch bilan aylantirish
     const camFactor = Math.min(1, delta * 8);
-    camera.position.x += (player.position.x - camera.position.x) * camFactor;
-    camera.position.z += (player.position.z + 18 - camera.position.z) * camFactor;
+    const camDist = 18;
+    const camBaseHeight = 15;
+    // camYaw = 0 bo'lsa asl (orqadan) ko'rinish saqlanadi
+    const desiredX = player.position.x + Math.sin(camYaw) * camDist;
+    const desiredZ = player.position.z + Math.cos(camYaw) * camDist;
+    const desiredY = camBaseHeight + camPitch;
+    camera.position.x += (desiredX - camera.position.x) * camFactor;
+    camera.position.z += (desiredZ - camera.position.z) * camFactor;
+    camera.position.y += (desiredY - camera.position.y) * camFactor;
     camera.lookAt(player.position.x, 1.5, player.position.z);
 
     checkSell();
@@ -1512,6 +1537,8 @@ function updateUI() {
 
     setText("powerBtn", "⚡ Power +50% (" + formatShort(powerCost) + "🪙)");
     setText("bagBtn", "🎒 Bag +50% (" + formatShort(bagCost) + "🪙)");
+    setText("mPowerBtn", "⚡ Power +50% (" + formatShort(powerCost) + "🪙)");
+    setText("mBagBtn", "🎒 Bag +50% (" + formatShort(bagCost) + "🪙)");
 
     const equippedSwordCount = swords.filter(s => s.equipped).length;
     setText("swordsCount", equippedSwordCount + "/" + MAX_SWORDS_EQUIPPED);
@@ -1550,6 +1577,13 @@ function updateUI() {
             badge.style.display = "none";
         }
     }
+
+    // MOBILE ixcham HUD (mirror qiymatlar)
+    setText("mHp", formatShort(playerHp));
+    setText("mStrength", formatShort(strength));
+    setText("mCoins", formatShort(coins));
+    setText("mPower", getFinalPower().toFixed(2) + "x");
+    setText("mRebirth", rebirths + "/" + MAX_REBIRTHS);
 
     updateHpUI();
     renderPets();
@@ -1765,6 +1799,24 @@ function setupButtons() {
     on("rebirthConfirmBtn", "click", doRebirth);
     on("rebirthCancelBtn", "click", function() { closeModal("rebirthModal"); });
 
+    // ===== MOBILE: action tugmalari =====
+    on("mAttackBtn", "click", attackNearestNpc);
+    on("mTrainBtn", "click", train);
+    on("mPowerBtn", "click", upgradePower);
+    on("mBagBtn", "click", upgradeBag);
+    on("mEggBtn", "click", buyEgg);
+
+    // ===== MOBILE: menu ochish/yopish =====
+    on("mobileMenuClose", "click", function() { closeModal("mobileMenu"); });
+    on("mobileNavMenu", "click", function() { openModal("mobileMenu"); });
+
+    // Menu / nav ichidagi data-menu tugmalari
+    document.querySelectorAll("[data-menu]").forEach(function(button) {
+        button.addEventListener("click", function() {
+            handleMobileMenu(this.dataset.menu);
+        });
+    });
+
     setupCombatClick();
 
     document.querySelectorAll("[data-close]").forEach(button => {
@@ -1788,6 +1840,154 @@ function setupButtons() {
             saveGame();
         });
     });
+}
+
+// ========================================
+// MOBILE MENU / CONTROLS
+// ========================================
+
+// Menu yoki nav bardagi tugma bosilganda kerakli modalni ochadi
+function handleMobileMenu(action) {
+    closeModal("mobileMenu");   // avval menuni yopamiz -> 3D world / modal ko'rinadi
+    switch (action) {
+        case "inventory":
+        case "pets":
+        case "swords":
+            renderInventory();
+            openModal("inventoryModal");
+            break;
+        case "artifacts":
+        case "shop":
+            renderShop();
+            openModal("shopModal");
+            break;
+        case "upgrades":
+            openModal("upgradesModal");
+            break;
+        case "rebirth":
+            requestRebirth();
+            break;
+        case "skins":
+            openModal("skinModal");
+            break;
+        case "controls":
+            openModal("controlsModal");
+            break;
+        default:
+            break;
+    }
+}
+
+// Virtual joystick + touch kamera boshqaruvini o'rnatadi
+function setupMobileControls() {
+    setupJoystick();
+    setupCameraTouch();
+}
+
+function setupJoystick() {
+    const base = byId("joystick");
+    const knob = byId("joyKnob");
+    if (!base || !knob) return;
+
+    const maxRadius = 42;  // knob markazdan maksimal siljishi (px)
+
+    function setKnob(dx, dy) {
+        knob.style.transform = "translate(" + dx + "px," + dy + "px)";
+    }
+
+    function updateVector(clientX, clientY) {
+        const rect = base.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        let dx = clientX - cx;
+        let dy = clientY - cy;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist > maxRadius) {
+            dx = (dx / dist) * maxRadius;
+            dy = (dy / dist) * maxRadius;
+        }
+        setKnob(dx, dy);
+        // -1..1 oralig'idagi vektor. Ekran Y pastga musbat -> z uchun to'g'ri (past = z+)
+        joyVec.x = dx / maxRadius;
+        joyVec.z = dy / maxRadius;
+    }
+
+    function reset() {
+        joyActive = false;
+        joyTouchId = null;
+        joyVec.x = 0;
+        joyVec.z = 0;
+        setKnob(0, 0);
+    }
+
+    base.addEventListener("touchstart", function(e) {
+        const t = e.changedTouches[0];
+        joyActive = true;
+        joyTouchId = t.identifier;
+        updateVector(t.clientX, t.clientY);
+        e.preventDefault();
+    }, { passive: false });
+
+    base.addEventListener("touchmove", function(e) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const t = e.changedTouches[i];
+            if (t.identifier === joyTouchId) {
+                updateVector(t.clientX, t.clientY);
+                e.preventDefault();
+                break;
+            }
+        }
+    }, { passive: false });
+
+    function endHandler(e) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === joyTouchId) {
+                reset();
+                break;
+            }
+        }
+    }
+    base.addEventListener("touchend", endHandler);
+    base.addEventListener("touchcancel", endHandler);
+}
+
+function setupCameraTouch() {
+    if (!renderer || !renderer.domElement) return;
+    const canvas = renderer.domElement;
+
+    canvas.addEventListener("touchstart", function(e) {
+        if (camTouchId !== null) return;
+        const t = e.changedTouches[0];
+        camTouchId = t.identifier;
+        camLastX = t.clientX;
+        camLastY = t.clientY;
+    }, { passive: true });
+
+    canvas.addEventListener("touchmove", function(e) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            const t = e.changedTouches[i];
+            if (t.identifier === camTouchId) {
+                const dx = t.clientX - camLastX;
+                const dy = t.clientY - camLastY;
+                camLastX = t.clientX;
+                camLastY = t.clientY;
+                camYaw -= dx * 0.006;                        // chap/o'ng -> aylantirish
+                camPitch = Math.max(-6, Math.min(18, camPitch + dy * 0.05)); // yuqori/past
+                break;
+            }
+        }
+    }, { passive: true });
+
+    function endHandler(e) {
+        for (let i = 0; i < e.changedTouches.length; i++) {
+            if (e.changedTouches[i].identifier === camTouchId) {
+                camTouchId = null;
+                break;
+            }
+        }
+    }
+    canvas.addEventListener("touchend", endHandler, { passive: true });
+    canvas.addEventListener("touchcancel", endHandler, { passive: true });
 }
 
 // ========================================

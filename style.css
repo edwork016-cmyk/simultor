@@ -26,6 +26,11 @@ button {
     display: none !important;
 }
 
+/* Mobile-only elementlar desktopda ko'rinmaydi */
+.mobileOnly {
+    display: none;
+}
+
 /* FATAL ERROR OVERLAY */
 
 #fatalError {
@@ -726,42 +731,241 @@ button {
     background: #1d4263;
 }
 
-/* MOBILE */
+/* ============================================================
+   MOBILE (<=768px): butunlay qayta tashkil qilingan UI/UX
+   ============================================================ */
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
 
-    .buttons {
-        top: 115px;
-        left: 15px;
-        right: auto;
+    /* --- Desktop HUD panellarini yashiramiz (overlap manbai) --- */
+    #hud .stats,
+    #hud .buttons,
+    #hud .artifactInfo,
+    #hud .swordInfo,
+    #hud .petInfo,
+    #hud .upgrades,
+    #hud .eggBtn,
+    #hud .attackBtn,
+    #hud .trainBtn,
+    #hud .controls {
+        display: none !important;
+    }
+
+    /* --- Mobile elementlarni yoqamiz --- */
+    .mobileOnly {
+        display: flex;
+    }
+
+    /* ============ TOP HUD ============ */
+    #mobileHud {
+        position: fixed;
+        top: calc(6px + env(safe-area-inset-top));
+        left: calc(8px + env(safe-area-inset-left));
+        right: calc(8px + env(safe-area-inset-right));
+        z-index: 60;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        gap: 4px 6px;
+        padding: 7px 10px;
+        border-radius: 12px;
+        background: rgba(5, 15, 28, 0.82);
+        border: 1px solid #29435f;
+        backdrop-filter: blur(4px);
+        pointer-events: auto;
+    }
+
+    .mHudItem {
+        font-size: clamp(11px, 3.2vw, 15px);
+        white-space: nowrap;
+    }
+
+    .mHudItem b {
+        color: #ffd873;
+    }
+
+    /* ============ JOYSTICK ============ */
+    #joystick {
+        position: fixed;
+        left: calc(20px + env(safe-area-inset-left));
+        bottom: calc(70px + env(safe-area-inset-bottom));
+        width: 120px;
+        height: 120px;
+        z-index: 70;
+        border-radius: 50%;
+        background: rgba(10, 29, 50, 0.45);
+        border: 2px solid rgba(80, 160, 220, 0.5);
+        touch-action: none;
+        pointer-events: auto;
+        align-items: center;
+        justify-content: center;
+    }
+
+    #joyKnob {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 35% 35%, #6fd0ff, #1c74b8);
+        border: 2px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 0 12px rgba(0, 180, 255, 0.5);
+        pointer-events: none;
+        transition: transform 0.02s linear;
+    }
+
+    /* ============ ACTION BUTTONS (o'ng) ============ */
+    .mActionBtn {
+        position: fixed;
+        right: calc(18px + env(safe-area-inset-right));
+        z-index: 70;
         flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+        width: 120px;
+        height: 56px;
+        border: 0;
+        border-radius: 16px;
+        color: white;
+        font-size: 22px;
+        font-weight: bold;
+        cursor: pointer;
+        pointer-events: auto;
     }
 
-    .buttons button {
-        width: 140px;
-    }
-
-    .artifactInfo,
-    .swordInfo {
-        display: none;
-    }
-
-    .petInfo {
-        width: 170px;
+    .mActionBtn span {
         font-size: 12px;
+        letter-spacing: 1px;
     }
 
-    .attackBtn,
-    .trainBtn {
-        width: 180px;
+    .mAttack {
+        bottom: calc(140px + env(safe-area-inset-bottom));
+        background: linear-gradient(90deg, #ff4d4d, #b8232f);
+        box-shadow: 0 4px 14px rgba(255, 60, 60, 0.35);
     }
 
-    .attackBtn {
-        bottom: 195px;
+    .mTrain {
+        bottom: calc(74px + env(safe-area-inset-bottom));
+        background: linear-gradient(90deg, #009cff, #7548ff);
+        box-shadow: 0 4px 14px rgba(0, 140, 255, 0.35);
     }
 
-    .upgrades {
-        bottom: 140px;
+    .mActionBtn:active {
+        filter: brightness(1.2);
+        transform: scale(0.96);
+    }
+
+    /* ============ BOTTOM NAV BAR ============ */
+    #mobileNav {
+        position: fixed;
+        left: 50%;
+        transform: translateX(-50%);
+        bottom: calc(6px + env(safe-area-inset-bottom));
+        z-index: 65;
+        display: flex;
+        gap: 6px;
+        padding: 6px 8px;
+        border-radius: 16px;
+        background: rgba(5, 15, 28, 0.9);
+        border: 1px solid #29435f;
+        pointer-events: auto;
+        /* Joystick chapda bo'lgani uchun bar markazdan o'ngga suriladi */
+        margin-left: 70px;
+        max-width: calc(100vw - 160px);
+    }
+
+    #mobileNav button {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 2px;
+        min-width: 52px;
+        padding: 4px 6px;
+        border: 0;
+        border-radius: 12px;
+        background: transparent;
+        color: #cfe0f0;
+        font-size: 10px;
+        cursor: pointer;
+    }
+
+    #mobileNav button span {
+        font-size: 20px;
+    }
+
+    #mobileNav button:active {
+        background: #16456c;
+    }
+
+    /* ============ MENU PANEL ============ */
+    #mobileMenu {
+        position: fixed;
+        inset: calc(10px + env(safe-area-inset-top)) 10px calc(10px + env(safe-area-inset-bottom)) 10px;
+        z-index: 150;
+        flex-direction: column;
+        padding: 16px;
+        border-radius: 18px;
+        background: #0d1b2d;
+        border: 1px solid #35bfff;
+        box-shadow: 0 0 45px rgba(0, 180, 255, 0.25);
+        overflow-y: auto;
+        pointer-events: auto;
+    }
+
+    #mobileMenu.hidden {
+        display: none !important;
+    }
+
+    .mobileMenuHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        font-size: 20px;
+        font-weight: bold;
+        margin-bottom: 16px;
+    }
+
+    #mobileMenuClose {
+        width: 36px;
+        height: 36px;
+        border: 0;
+        border-radius: 50%;
+        background: #20344b;
+        color: white;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .mobileMenuGrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+
+    .mobileMenuGrid button {
+        padding: 16px 10px;
+        border: 1px solid #31516e;
+        border-radius: 12px;
+        background: rgba(10, 29, 50, 0.92);
+        color: white;
+        font-size: clamp(13px, 3.6vw, 16px);
+        cursor: pointer;
+    }
+
+    .mobileMenuGrid button:active {
+        background: #16456c;
+    }
+
+    /* ============ MOBILE MODALS ============ */
+    .modalBox {
+        width: calc(100vw - 20px);
+        max-width: 500px;
+        max-height: 85vh;
+        padding: 20px 16px;
+    }
+
+    .rebirthReqRow,
+    .rebirthCols {
+        flex-direction: column;
     }
 
     .skinCards {
@@ -772,7 +976,71 @@ button {
         flex-wrap: wrap;
     }
 
+    /* ============ MOBILE UPGRADE / CONTROLS ============ */
+    .wideModalBtn {
+        display: block;
+        width: 100%;
+        margin: 10px 0;
+        padding: 15px;
+        border: 1px solid #31516e;
+        border-radius: 12px;
+        background: rgba(10, 29, 50, 0.92);
+        color: white;
+        font-size: 15px;
+        cursor: pointer;
+    }
+
+    .wideModalBtn:active {
+        background: #16456c;
+    }
+
+    .controlsList {
+        line-height: 1.9;
+        padding-left: 18px;
+        color: #cdd9e6;
+        font-size: 14px;
+    }
+
+    /* Text ekrandan chiqmasin */
+    body {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    #message {
+        bottom: calc(200px + env(safe-area-inset-bottom));
+        font-size: 13px;
+        max-width: 80vw;
+        text-align: center;
+    }
+
     .fatalBox {
         padding: 22px;
+    }
+}
+
+/* Landscape (past balandlik) uchun ixchamlashtirish */
+@media (max-width: 900px) and (orientation: landscape) {
+
+    #joystick {
+        width: 100px;
+        height: 100px;
+        bottom: calc(12px + env(safe-area-inset-bottom));
+    }
+
+    #joyKnob {
+        width: 44px;
+        height: 44px;
+    }
+
+    .mAttack {
+        bottom: calc(84px + env(safe-area-inset-bottom));
+    }
+
+    .mTrain {
+        bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+
+    #mobileNav {
+        bottom: calc(4px + env(safe-area-inset-bottom));
     }
 }
